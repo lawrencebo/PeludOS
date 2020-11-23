@@ -4,6 +4,5 @@
 [ extern k_main ] ; Declate that we will be referencing the external symbol 'main ',
                 ; so the linker can substitute the final address
 
-_start:
     call k_main ; invoke k_main() in our C kernel
     jmp $ ; Hang forever when we return from the kernel
