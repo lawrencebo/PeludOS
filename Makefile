@@ -5,15 +5,21 @@ GDB = $(CROSS)gdb
 OC = $(CROSS)objcopy
 AS = nasm
 
-ASFLAGS = -g -I ./boot -f elf32
+ASFLAGS = -g3 -F dwarf -I ./boot -f elf32
 CFLAGS = -std=gnu11 -ffreestanding -nostdinc -g -I.
 LDFLAGS = -nostdlib -melf_i386
 
+BUILD_DIR = build
+
+KERNEL_ELF = $(BUILD_DIR)/kernel.elf
+KERNEL_BIN = ${KERNEL_ELF:.elf=.bin}
 KERNEL_OFFSET = -Ttext=0x1000
+
+BOOT_ELF = $(BUILD_DIR)/boot.elf
+BOOT_BIN = ${BOOT_ELF:.elf=.bin}
 BOOT_OFFSET = -Ttext=0x7c00
 
 QEMU = qemu-system-i386
-BUILD_DIR = build
 TARGET = $(BUILD_DIR)/os-image
 
 VPATH = boot kernel drivers
@@ -36,9 +42,10 @@ run: all
 # Open the connection to qemu and load our kernel-object file with symbols
 debug: all
 	$(QEMU) -s -fda $(TARGET) &
-	$(GDB) -ex "target remote localhost:1234" \
-		-ex "add-symbol-file $(BUILD_DIR)/boot.elf" \
-		-ex "add-symbol-file $(BUILD_DIR)/kernel.elf"
+	$(GDB) \
+		-ex "target remote localhost:1234" \
+		-ex "add-symbol-file $(BOOT_ELF)" \
+		-ex "add-symbol-file $(KERNEL_ELF)" \
 
 # Output dirs
 $(BUILD_DIR):
@@ -47,18 +54,18 @@ $(BUILD_DIR):
 
 # This is the actual disk image that the computer loads
 # which is the combination of our compiled bootsector and kernel
-$(TARGET): $(BUILD_DIR)/boot.bin $(BUILD_DIR)/kernel.bin
+$(TARGET): $(BOOT_BIN) $(KERNEL_BIN)
 	cat $^ > $@
 	@chmod +x $@
+
+# Builds the bootloader elf
+$(BOOT_ELF): $(BUILD_DIR)/boot.o
+	$(LD) $(LDFLAGS) $(BOOT_OFFSET) -o $@ $^
 
 # This builds the binary of our kernel from two object files :
 # - the kernel_entry , which jumps to k_main() in our kernel
 # - the compiled C kernel
-$(BUILD_DIR)/boot.elf: $(BUILD_DIR)/boot.o
-	$(LD) $(LDFLAGS) $(BOOT_OFFSET) -o $@ $^
-
-# Used for debugging purposes
-$(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o ${OBJ}
+$(KERNEL_ELF): $(BUILD_DIR)/kernel_entry.o ${OBJ}
 	$(LD) $(LDFLAGS) $(KERNEL_OFFSET) -o $@ $^
 
 # Compile commands database
