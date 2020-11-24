@@ -1,4 +1,4 @@
-[ bits 32 ]
+[bits 32]
 ; Define some constants
 INITIAL_VIDEO_MEMORY equ 0xb8000
 MIDDLE_SCREEN equ INITIAL_VIDEO_MEMORY + 2 * (12 * 80 + 16)

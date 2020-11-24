@@ -1,7 +1,8 @@
-[ bits 16 ]
+[bits 16]
 
 print_string:
     pusha
+
     mov ah, 0x0e
 print_loop:
     mov al, [bx]
@@ -11,34 +12,12 @@ print_loop:
     inc bx
     jmp print_loop
 print_exit:
+
+    mov ah, 0x0e
+    mov al, 0x0a ; newline char
+    int 0x10
+    mov al, 0x0d ; carriage return
+    int 0x10
+
     popa
     ret
-
-; print_hex:
-;     pusha
-
-;     mov bx, HEX_OUT + 2
-; print_hex_loop:
-;     mov ax, dx
-;     and ax, 0xf000
-;     shr ax, 12
-;     cmp ax, 9
-;     jle step_2
-;     add ax, 7
-; step_2:
-;     add ax, 0x30
-;     mov [bx], al
-;     inc bx
-;     shl dx, 4
-;     cmp [bx], byte 0
-;     jne print_hex_loop
-
-;     mov ax, HEX_OUT
-;     call print_string
-
-;     popa
-;     ret
-
-; ; global variables
-; HEX_OUT:
-;     db '0x0000',0

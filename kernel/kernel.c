@@ -3,7 +3,7 @@
 
 #define VIDEO_MEMORY_START 0xb8000
 
-void print_string(char *string) {
+void print(char *string) {
   clear_screen();
   // Create a pointer to a char, and point it to the first text cell of
   // video memory (i.e. the top-left of the screen)
@@ -17,5 +17,5 @@ void k_main() {
   // At the address pointed to by video_memory, store the character ’X’ // (i.e.
   // display ’X’ in the top-left of the screen).
   char *name = "Hello from FabiOS";
-  print_string(name);
+  print(name);
 }

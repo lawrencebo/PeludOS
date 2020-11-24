@@ -2,10 +2,15 @@ CROSS = i386-elf-
 CC = $(CROSS)gcc
 LD = $(CROSS)ld
 GDB = $(CROSS)gdb
+OC = $(CROSS)objcopy
 AS = nasm
 
+ASFLAGS = -g -I ./boot -f elf32
 CFLAGS = -std=gnu11 -ffreestanding -nostdinc -g -I.
-LDFLAGS = -Ttext 0x1000 -nostdlib
+LDFLAGS = -nostdlib -melf_i386
+
+KERNEL_OFFSET = -Ttext=0x1000
+BOOT_OFFSET = -Ttext=0x7c00
 
 QEMU = qemu-system-i386
 BUILD_DIR = build
@@ -29,9 +34,11 @@ run: all
 	$(QEMU) -fda $(TARGET)
 
 # Open the connection to qemu and load our kernel-object file with symbols
-debug: $(TARGET) $(BUILD_DIR)/kernel.elf
+debug: all
 	$(QEMU) -s -fda $(TARGET) &
-	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file $(BUILD_DIR)/kernel.elf"
+	$(GDB) -ex "target remote localhost:1234" \
+		-ex "add-symbol-file $(BUILD_DIR)/boot.elf" \
+		-ex "add-symbol-file $(BUILD_DIR)/kernel.elf"
 
 # Output dirs
 $(BUILD_DIR):
@@ -47,12 +54,12 @@ $(TARGET): $(BUILD_DIR)/boot.bin $(BUILD_DIR)/kernel.bin
 # This builds the binary of our kernel from two object files :
 # - the kernel_entry , which jumps to k_main() in our kernel
 # - the compiled C kernel
-$(BUILD_DIR)/kernel.bin: $(BUILD_DIR)/kernel_entry.o ${OBJ}
-	$(LD) -o $@ $(LDFLAGS) $^ --oformat binary
+$(BUILD_DIR)/boot.elf: $(BUILD_DIR)/boot.o
+	$(LD) $(LDFLAGS) $(BOOT_OFFSET) -o $@ $^
 
 # Used for debugging purposes
 $(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o ${OBJ}
-	$(LD) -o $@ $(LDFLAGS) $^
+	$(LD) $(LDFLAGS) $(KERNEL_OFFSET) -o $@ $^
 
 # Compile commands database
 compile_commands.json: Makefile
@@ -65,11 +72,11 @@ $(BUILD_DIR)/%.o: %.c ${HEADERS}
 
 # Assemble the kernel_entry
 $(BUILD_DIR)/%.o: %.asm
-	$(AS) $< -f elf -o $@
+	$(AS) $< $(ASFLAGS) -o $@
 
 # Assemble the boot sector
-$(BUILD_DIR)/%.bin: %.asm
-	$(AS) $< -f bin -I ./boot -o $@
+$(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf
+	$(OC) -O binary $< $@
 
 clean:
 	rm -rf $(BUILD_DIR)

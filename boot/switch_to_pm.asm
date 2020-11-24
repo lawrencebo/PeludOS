@@ -1,4 +1,4 @@
-[ bits 16 ]
+[bits 16]
 ; Switch to protected mode
 switch_to_pm:
     cli                     ; We must switch of interrupts until we have
@@ -15,7 +15,7 @@ switch_to_pm:
                             ; code. This also forces the CPU to flush its cache of
                             ; pre - fetched and real - mode decoded instructions , which can
                             ; cause problems.
-[ bits 32]
+[bits 32]
 ; Initialise registers and the stack once in PM.
 init_pm:
     mov ax, DATA_SEG   ; Now in PM , our old segments are meaningless ,

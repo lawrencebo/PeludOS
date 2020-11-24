@@ -1,3 +1,4 @@
+[bits 16]
 ; load DH sectors to ES:BX from drive DL
 disk_load :
     push dx         ; Store DX on stack so later we can recall
@@ -23,5 +24,5 @@ disk_error:
     call print_string
     jmp $
 
-    ; Variables
-    DISK_ERROR_MSG db " Disk read error !", 0
+; Variables
+DISK_ERROR_MSG db " Disk read error !", 0
