@@ -16,6 +16,6 @@ void print(char *string) {
 void k_main() {
   // At the address pointed to by video_memory, store the character ’X’ // (i.e.
   // display ’X’ in the top-left of the screen).
-  char *name = "Hello from FabiOS";
+  char *name = "Hello from PeludOS";
   print(name);
 }
