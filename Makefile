@@ -3,9 +3,9 @@ CC = $(CROSS)gcc
 LD = $(CROSS)ld
 GDB = $(CROSS)gdb
 OC = $(CROSS)objcopy
-AS = nasm
+AS = yasm
 
-ASFLAGS = -g3 -F dwarf -I ./boot -f elf32
+ASFLAGS = -g dwarf2 -I ./boot -f elf32
 CFLAGS = -std=gnu11 -ffreestanding -nostdinc -g -I.
 LDFLAGS = -nostdlib -melf_i386
 
